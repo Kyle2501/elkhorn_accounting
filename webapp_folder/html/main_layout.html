@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="accounting" ng-controller="page">
+<head>
+<meta charset="UTF-8">
+<title>{{ page_name }} - Accounting</title>
+
+
+<style>
+
+body { font-family: 'Raleway', sans-serif; color: #777; background-color: #FAFAFA; padding: 0; margin: 0; }
+
+
+.user_gate { font-size: 12px; text-align: right; position: fixed; top: 10px; right: 10px; vertical-align: top; z-index: 995; }
+.user_gate a { color: blue; text-decoration: none; }
+.user_gate a:visited { color: blue; }
+.user_gate a:hover { text-decoration: underline; }
+.user_image { margin-right: 5px; }
+.user_image img { border-radius: 50%; width: 40px; height: 40px; }
+
+.elkhorn_wrap { position: fixed; bottom: 5px; right: 10px; }
+.elkhorn_wrap img { height: 40px; transition: height 0.5s ease; }
+.elkhorn_wrap img:hover { height: 160px; transition: height 0.5s ease; }
+
+header { }
+.site_name { font-family: 'Libre Baskerville', serif; font-size: 32px; color: #555; display: inline-block; }
+
+.left_side { margin-top: 5px; display: inline-block; vertical-align: top; }
+.left_side img { width: 35px; }
+
+main { outline: 1px solid #777; width: 650px; margin: 0 auto; min-height: 250px; margin-top: 15px; }
+
+.page_data { margin: 15px; }
+
+
+</style>
+
+<script type="text/javascript" src="../../files/angular1.5.min.js"></script>
+<script>
+
+var elk = angular.module("accounting", [],
+function($interpolateProvider) {
+  $interpolateProvider.startSymbol('[!');
+  $interpolateProvider.endSymbol('!]');
+}) ///
+
+elk.controller('page', function($scope,$http,$sce) {
+
+$scope.add_agenda = 'off';
+
+$scope.agenda_list = '';
+$http({ method: 'GET', url: '/list_data?agenda_list?' + $scope.user_email})
+  .success(function(data, status) { $scope.agenda_list = data; console.log(data); });
+
+
+
+
+
+ $scope.showDetail = function (day_item) {
+   $scope.month_day_detail = day_item;
+ };
+
+
+ var today = new Date();
+
+  $scope.month_now = today.getMonth();
+  $scope.year_now = today.getFullYear();
+
+  $scope.date = { year : $scope.year_now, month : $scope.month_now };
+
+
+  // $scope.months = [{'month_name': 'January', 'month_number': 01},{'month_name': 'February', 'month_number': 02},{March},{April},{May},{June},{July},{August},{September},{October},{November},{December}];
+
+  $scope.months = [1,2,3,4,5,6,7,8,9,10,11,12];
+  
+  $scope.month_days = [];
+
+
+  $scope.years = [];
+    var start_year = $scope.year_now - 5;
+    var end_year = $scope.year_now + 5;
+    for(var i=start_year;i<end_year;i++) {
+      $scope.years.push(i);
+    };
+
+  $scope.weekday = {{ weekday }};
+  $scope.month_day = {{ month_day }};
+ // console.log($scope.month_day);
+  $scope.week_range = {{ week_range|safe }};
+//  console.log($scope.week_range);
+  
+
+
+  $scope.week_days = {{ week_days|safe }};
+  
+  $scope.day_of_week = {{ day_of_week }};
+  
+  //console.log($scope.day_of_week);
+
+  $scope.day_hours = ['am 07:00','am 08:00','am 09:00','am 10:00','am 11:00','pm 12:00','pm 01:00', 'pm 02:00', 'pm 03:00', 'pm 04:00', 'pm 05:00','pm 06:00','pm 07:00'];
+
+
+  $scope.show_times_4day_view = 'off';
+  
+  $scope.calendar = {{ calendar }};
+  //console.log($scope.calendar);
+  
+  // $scope.calendar2 = {{ calendar2 }};
+ // console.log($scope.calendar2);
+  
+  $scope.days_month = {{ days_month }};
+ // console.log($scope.days_month);
+  
+  for (var i=1; i <= $scope.days_month; i++) {
+    $scope.month_days.push(i);
+  };
+//  console.log($scope.month_days);
+  
+//  $scope.future_months_1 = {{ future_months_1 }};
+//  $scope.future_months_2 = {{ future_months_2 }};
+//  $scope.future_months_3 = {{ future_months_3 }};
+//  $scope.future_months_4 = {{ future_months_4 }};
+//  $scope.future_months_5 = {{ future_months_5 }};
+  
+//  console.log($scope.future_months_2);
+  
+}); ///
+
+elk.filter('startFrom', function() {
+    return function(input, start) {
+        if(input) {
+            start = +start; //parse to int
+            return input.slice(start);
+        }
+        return [];
+    }
+}); ///
+
+elk.filter('timeAgo', ['$interval', function ($interval){
+    // trigger digest every 60 seconds
+    $interval(function (){}, 60000);
+
+    function fromNowFilter(time){
+      return moment(time).fromNow();
+    }
+
+    fromNowFilter.$stateful = true;
+    return fromNowFilter;
+}]); ///
+
+
+
+</script>
+
+</head>
+<body>
+
+  <div class="user_gate" ng-show="modal=='on'">
+    {% if user_name != 'No User' %}
+    <a href="../../my_info">
+      <div class="user_image"><img ng-src="/render_img?client?thumb?[! my_info.client_email !]"></a>
+      </div>{% endif %}
+      <div class="user_name">
+      {% if user_name != 'No User' %}
+        {{ user_name }}
+        <p><a href="../../my_info">My Info</a></p>
+      {% endif %}
+      <p><a href="{{ login_key }}">{{ gate }}</a></p>
+      
+    </div>
+  </div><!-- . user_gate - -->
+
+
+<header>
+  <a href="/"><img style="margin-left:5px;margin-top:10px;width:55px;" src="../../pics/8zaezz.png" /></a>
+  <div class="site_name">.io Accounting</div>
+</header>
+
+<aside class="left_side">
+ .
+</aside><!-- . left_side - -->
+
+<main>
+  <div class="page_data">
+    {{ page_html|safe }}
+  </div><!-- . page_data - -->
+
+</main>
+
+
+  <div class="elkhorn_wrap">
+    <a href="http://labs.elkhorn.io/"><img src="../../pics/zaezae.png" /></a>
+  </div><!-- - /elkhorn_wrap - -->
+</body>
+</html>
